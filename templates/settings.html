@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conectar a una red Wi-Fi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .navbar {
+            background-color: #333;
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar-item {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            margin: 0 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar-item:hover {
+            background-color: #555;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 10px;
+            width: 300px;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .update-button,
+        .upload-button {
+            background-color: #45a049;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        .update-button:hover,
+        .upload-button:hover {
+            background-color: #45a049;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="submit"],
+        input[type="file"] {
+            width: calc(100% - 20px); /* Ajustar el ancho para compensar el padding */
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        @media screen and (max-width: 600px) {
+            .content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .card {
+                width: 80%;
+            }
+        }
+
+        .telegram {
+            display: flex;
+            align-items: center; /* Centra verticalmente los elementos */
+            margin-bottom: 10px;
+        }
+
+        .telegram h2 {
+            display: inline-block; /* Asegura que el título esté en línea */
+            margin-right: 10px; /* Ajusta el espacio entre el título y el toggle switch */
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            vertical-align: middle; /* Alinea verticalmente con el título */
+            margin-left: auto;
+        }
+
+        .toggle-input {
+            display: none;
+        }
+
+        .toggle-label {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 34px;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-label::before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-input:checked + .toggle-label {
+            background-color: #4CAF50;
+        }
+
+        .toggle-input:checked + .toggle-label::before {
+            transform: translateX(26px);
+        }
+
+        .token-input-container {
+            display: none;
+            width: 100%;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .token-input-container label,
+        .token-input-container input,
+        .token-input-container button {
+            width: 100%;
+            margin-top: 10px;
+        }
+        #wifi-list {
+            overflow-y: auto; /* Agrega una barra de desplazamiento vertical cuando sea necesario */
+            max-height: 200px; /* Establece la altura máxima del contenedor */
+        }
+
+        .opciones{
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        .table-container {
+            overflow-y: auto; /* Agrega una barra de desplazamiento vertical cuando sea necesario */
+            max-height: 200px; /* Establece la altura máxima del contenedor */
+        }
+
+        table {
+            border-collapse: collapse; /* Elimina los bordes entre las celdas */
+            width: 100%;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .fixed-header {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background-color: #f2f2f2; /* Mantener el color de fondo del encabezado */
+        }
+        .network-info-container {
+            overflow-y: auto; /* Agrega una barra de desplazamiento vertical cuando sea necesario */
+            max-height: 200px; /* Establece la altura máxima del contenedor */
+        }
+
+        .network-info {
+            padding: 10px; /* Ajusta el relleno para evitar el desbordamiento horizontal */
+        }
+
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <a href="dashboard.html" class="navbar-item">Inicio</a>
+    <a href="settings.html" class="navbar-item">Setting</a>
+    <a href="tarjetas.html" class="navbar-item">Tarjetas</a>
+    <a href="console.html" class="navbar-item">Console Serial</a>
+    <a href="#" class="navbar-item logout-button" onclick="logout()">Cerrar sesión</a>
+</div>
+
+<div class="content">
+    <div class="card">
+        <div class="card-header">
+            <h2>Información de Red</h2>
+        </div>
+        <div class="network-info-container">
+            <div class="network-info">
+                <p><strong>Nombre de Esp32:</strong> ESP32</p>
+                <p><strong>Nombre de Red:</strong> MiRedWiFi</p>
+                <p><strong>Dirección IP:</strong> 192.168.1.100</p>
+                <p><strong>Dirección MAC:</strong> 12:34:56:78:90:AB</p>
+                <p><strong>Hora Actual:</strong> 12:30 PM</p>
+                <p><strong>Status SD:</strong> Online</p>
+                <p><strong>Ultima Sesión:</strong> 192.168.0.159</p>
+                <p><strong>Update OTA:</strong> 12/05/2024 - 13:02</p>
+
+
+                <!-- Agrega más información si es necesario -->
+            </div>
+        </div>
+        <div class="opciones">
+        <p>Opciones Avanzadas</p>
+        <div class="toggle-switch">
+
+            <input type="checkbox" id="token-switch3" class="toggle-input">
+            <label for="token-switch3" class="toggle-label"></label>
+        </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Redes Wi-Fi Disponibles</h2>
+        </div>
+        <div class="button-container">
+            <button onclick="actualizarWifi()" class="update-button">Actualizar</button>
+        </div>
+        <div id="wifi-list">
+            <div class="wifi-item">
+                <h3>Wi-Fi 1</h3>
+                <p>Información sobre Wi-Fi 1...</p>
+
+            </div>
+            <div class="wifi-item">
+                <h3>Wi-Fi 2</h3>
+                <p>Información sobre Wi-Fi 2...</p>
+
+            </div>
+            <div class="wifi-item">
+                <h3>Wi-Fi 3</h3>
+                <p>Información sobre Wi-Fi 3...</p>
+
+            </div>
+            <!-- Agrega más redes Wi-Fi según sea necesario -->
+        </div>
+    </div>
+
+
+    <div class="card">
+        <h2>Conectar a una red Wi-Fi</h2>
+        <form id="wifi-login-form">
+            <label for="username">Nombre de Usuario:</label>
+            <input type="text" id="username" name="username" required><br><br>
+
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" name="password" required><br><br>
+
+            <input type="submit" value="Conectar">
+        </form>
+    </div>
+    <div class="card">
+        <h2>Conectar a una server NTP</h2>
+        <form id="">
+            <label for="username">Server Ntp:</label>
+            <input type="text" id="serverntp" name="username" value="time.google.com" required><br><br>
+
+            <input type="submit" value="Guardar">
+        </form>
+    </div>
+
+    <div class="card" id="mysql-card">
+        <div class="telegram">
+            <h2>Mysql</h2>
+            <div class="toggle-switch">
+                <input type="checkbox" id="token-switch2" class="toggle-input">
+                <label for="token-switch2" class="toggle-label"></label>
+            </div>
+        </div>
+        <div class="token-input-container" id="inputIp">
+            <label for="token">IpServer</label>
+            <input type="text" id="token2" name="token">
+            <label for="token">Username</label>
+            <input type="text" id="name" name="username">
+            <label for="token">Password</label>
+            <input type="password" id="pass" name="password">
+            <button class="update-button" id="save-token-button2">Guardar</button>
+        </div>
+    </div>
+
+    <div class="card" id="file-upload-card">
+        <h2>Subir Archivo</h2>
+        <form id="file-upload-form">
+            <label for="file">Seleccionar Archivo:</label>
+            <input type="file" id="file" name="file" accept=".pdf, .doc, .docx"><br><br>
+
+            <input type="submit" value="Subir Archivo" class="upload-button">
+        </form>
+    </div>
+    <div class="card" id="telegram-card">
+        <div class="telegram">
+            <h2>Telegram</h2>
+            <div class="toggle-switch">
+                <input type="checkbox" id="token-switch" class="toggle-input">
+                <label for="token-switch" class="toggle-label"></label>
+            </div>
+        </div>
+        <div id="token-input-container" class="token-input-container">
+            <label for="token">Token Bot:</label>
+            <input type="text" id="token" name="token">
+            <button class="update-button" id="save-token-button">Guardar</button>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <h2>Registros</h2>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                <tr>
+                    <th class="fixed-header">Fecha</th>
+                    <th class="fixed-header">Action</th>
+                    <th class="fixed-header">Fotos</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>12/05/2024-15:50</td>
+                    <td>Open</td>
+                    <td><a href="#">1</a></td>
+                </tr>
+                <tr>
+                    <td>12/05/2024-15:50</td>
+                    <td>Open</td>
+                    <td><a href="#">1</a></td>
+                </tr>
+                <tr>
+                    <td>12/05/2024-15:50</td>
+                    <td>Open</td>
+                    <td><a href="#">1</a></td>
+                </tr><tr>
+                    <td>12/05/2024-15:50</td>
+                    <td>Open</td>
+                    <td><a href="#">1</a></td>
+                </tr>
+                <tr>
+                    <td>12/05/2024-15:50</td>
+                    <td>Open</td>
+                    <td><a href="#">1</a></td>
+                </tr>
+                <tr>
+                    <td>12/05/2024-15:50</td>
+                    <td>Open</td>
+                    <td><a href="#">1</a></td>
+                </tr>
+                <tr>
+                    <td>12/05/2024-15:50</td>
+                    <td>Open</td>
+                    <td><a href="#">1</a></td>
+                </tr>
+                <tr>
+                    <td>12/05/2024-15:50</td>
+                    <td>Open</td>
+                    <td><a href="#">1</a></td>
+                </tr>
+                <tr>
+                    <td>12/05/2024-15:50</td>
+                    <td>Open</td>
+                    <td><a href="#">1</a></td>
+                </tr>
+
+                <!-- Agrega más filas según sea necesario -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+
+</div>
+
+<script>
+    function checkSessionCookie() {
+        var cookies = document.cookie.split(';');
+        var sessionCookieValid = false;
+        var username;
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.startsWith('username=')) {
+                // Obtiene el nombre de usuario de la cookie
+                username = cookie.substring('username='.length);
+                sessionCookieValid = true;
+                break;
+            }
+        }
+        // Si la cookie de sesión no es válida, redirecciona de vuelta a la página de inicio de sesión
+        if (!sessionCookieValid || !username || username !== 'admin') {
+            window.location.href = "login.html";
+        }
+    }
+
+    function setAdvancedOptionCookie() {
+        var tokenSwitch3 = document.getElementById("token-switch3");
+        document.cookie = "advancedOption=" + tokenSwitch3.checked + "; expires=Thu, 01 Jan 2026 12:00:00 UTC; path=/;";
+    }
+
+    function getAdvancedOptionCookie() {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.startsWith('advancedOption=')) {
+                // Devuelve el valor de la cookie advancedOption
+                return cookie.substring('advancedOption='.length) === 'true';
+            }
+        }
+        // Si no se encuentra la cookie, devuelve false por defecto
+        return false;
+    }
+    function confirmarAccion() {
+        var mostrarConfirmacion = !getAdvancedOptionCookie(); // Mostrar confirmación si la cookie es false
+        if (mostrarConfirmacion) {
+            var respuesta = confirm("¿Estás segur@ que deseas activar el modo Avanzado?");
+            return respuesta;
+        } else {
+            return true; // Si la cookie ya es true, no mostrar confirmación y continuar
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var tokenSwitch = document.getElementById("token-switch");
+        var tokenInputContainer = document.getElementById("token-input-container");
+        var tokenSwitch3 = document.getElementById("token-switch3");
+        var mysqlCard = document.getElementById("mysql-card");
+        var fileUploadCard = document.getElementById("file-upload-card");
+        var telegramCard = document.getElementById("telegram-card");
+        mysqlCard.style.display = "none";
+        fileUploadCard.style.display = "none";
+        telegramCard.style.display = "none";
+
+        tokenSwitch3.checked = getAdvancedOptionCookie();
+
+        tokenSwitch3.addEventListener("change", function() {
+            // Si el usuario confirma la acción
+            if (confirmarAccion()) {
+                // Establecer la cookie de opción avanzada
+                setAdvancedOptionCookie();
+                // Mostrar u ocultar las tarjetas según el estado del switch
+                if (tokenSwitch3.checked) {
+                    mysqlCard.style.display = "block";
+                    fileUploadCard.style.display = "block";
+                    telegramCard.style.display = "block";
+                } else {
+                    mysqlCard.style.display = "none";
+                    fileUploadCard.style.display = "none";
+                    telegramCard.style.display = "none";
+                }
+            } else {
+                // Si el usuario cancela la acción, revertir el estado del switch
+                tokenSwitch3.checked = false;
+            }
+        });
+        var advancedOptionCookie = getAdvancedOptionCookie();
+        if (advancedOptionCookie) {
+            tokenSwitch3.checked = true;
+            mysqlCard.style.display = "block";
+            fileUploadCard.style.display = "block";
+            telegramCard.style.display = "block";
+        } else {
+            tokenSwitch3.checked = false;
+            mysqlCard.style.display = "none";
+            fileUploadCard.style.display = "none";
+            telegramCard.style.display = "none";
+        }
+        tokenSwitch.addEventListener("change", function() {
+            if (tokenSwitch.checked) {
+                tokenInputContainer.style.display = "block";
+            } else {
+                tokenInputContainer.style.display = "none";
+            }
+        });
+
+        var tokenSwitch2 = document.getElementById("token-switch2");
+        var tokenInputContainer2 = document.getElementById("inputIp");
+
+        tokenSwitch2.addEventListener("change", function() {
+            if (tokenSwitch2.checked) {
+                tokenInputContainer2.style.display = "block";
+            } else {
+                tokenInputContainer2.style.display = "none";
+            }
+        });
+    });
+
+    function logout() {
+        // Elimina la cookie de sesión
+        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "advancedOption=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // Redirecciona de vuelta a la página de inicio de sesión
+        window.location.href = "login.html";
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        var toggleSwitch = document.getElementById("show-more-info");
+        var additionalInfoCard = document.querySelector(".additional-info-card");
+
+        toggleSwitch.addEventListener("change", function() {
+
+            if (toggleSwitch.checked && confirmarAccion()) {
+                additionalInfoCard.style.display = "block";
+            } else {
+                additionalInfoCard.style.display = "none";
+            }
+        });
+    });
+
+    checkSessionCookie();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .navbar {
+            background-color: #333;
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar-item {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            margin: 0 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar-item:hover {
+            background-color: #555;
+        }
+
+        .card-container {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .card {
+            margin: 10px; /* Agrega espacio entre las tarjetas */
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+            max-width: calc(50% - 20px); /* Para mantener el espacio entre las tarjetas */
+        }
+
+        .logout-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            opacity: 0.8;
+        }
+
+        .boton {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: transparent;
+            border: 2px solid #4CAF50; /* borde verde */
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75); /* sombra */
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .circulo-interior {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 95px;
+            height: 95px;
+            border-radius: 50%;
+            background-color: #ccc;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .circulo-interior img {
+            max-width: 90%; /* Tamaño máximo para la imagen dentro del círculo interior */
+            max-height: 90%; /* Tamaño máximo para la imagen dentro del círculo interior */
+        }
+
+        .boton:active .circulo-interior {
+            opacity: 1;
+        }
+
+        .garage:active {
+            background-color: #f44336; /* rojo */
+            border-color: #f44336; /* borde rojo */
+            transform: translateY(2px);
+        }
+        
+
+        .pressed{
+            background-color: #f44336; /* rojo */
+            border-color: #f44336; /* borde rojo */
+            transform: translateY(2px);
+        }
+        .card .contenedor img{
+            width: 90%;
+            height: 90%;
+        }
+
+        .power-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #4CAF50; /* verde */
+            font-size: 36px;
+        }
+        .contenedor {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: 300px;
+            height: 100px;
+        }
+
+        .circulo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: white;
+            box-shadow: 0px 0px 10px 0px rgba(0,0,0,0.75); /* sombra */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        /* Media queries para hacer el diseño responsivo */
+        @media only screen and (max-width: 600px) {
+            .card-container {
+                padding: 10px;
+            }
+            .card {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <a href="dashboard.html" class="navbar-item">Inicio</a>
+    <a href="settings.html" class="navbar-item">Setting</a>
+    <a href="tarjetas.html" class="navbar-item">Tarjetas</a>
+    <a href="console.html" class="navbar-item">Console Serial</a>
+    <a href="#" class="navbar-item logout-button" onclick="logout()">Cerrar sesión</a>
+</div>
+<div class="card-container">
+    <div class="card">
+        <h2>Puerta Garaje</h2>
+        <div class="contenedor">
+            <div class="circulo"><img src="" alt="Icono por defecto"></div>
+            <div class="circulo"><img src="" alt="Icono por defecto"></div>
+            <div class="circulo"><img src="" alt="Icono por defecto"></div>
+        </div>
+        <button class="boton garage" onclick="animateButton()" >
+            <div class="circulo-interior"></div>
+            <img class="power-icon" src="https://img.icons8.com/ios/50/000000/shutdown.png"/>
+        </button>
+    </div>
+    <div class="card">
+        <h2>Puerta</h2>
+        <div class="contenedor">
+            <div class="circulo"><img src="" alt="Icono por defecto"></div>
+            <div class="circulo" id="wifi-icon"><img src="" alt="Icono por defecto"></div>
+            <div class="circulo"><img src="" id ="lock-puerta" alt="Icono por defecto"></div>
+        </div>
+        <button class="boton" id="puerta" onclick="presionarBoton()">
+            <div class="circulo-interior"></div>
+            <img class="power-icon" src="https://img.icons8.com/ios/50/000000/shutdown.png"/>
+        </button>
+    </div>
+</div>
+
+<script>
+    cambiarImagenes();
+    //cambiarImagenes(); // Agregar la nueva función para cambiar las imágenes
+    function logout() {
+        // Elimina la cookie de sesión
+        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "advancedOption=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // Redirecciona de vuelta a la página de inicio de sesión
+        window.location.href = "login.html";
+    }
+
+    function presionarBoton() {
+        var boton = document.getElementById("puerta");
+        boton.classList.add("pressed"); // Agrega una clase para indicar que el botón está presionado
+
+        // Cambia la imagen al presionar el botón
+        var iconoPuerta = document.getElementById("lock-puerta");
+        iconoPuerta.src = "https://cdn.icon-icons.com/icons2/2104/PNG/512/unlock_icon_129431.png";
+
+        // Espera 5 segundos antes de volver a cambiar la imagen
+        setTimeout(function() {
+            console.log("ahro");
+            boton.classList.remove("pressed"); // Remueve la clase después de 5 segundos
+            iconoPuerta.src = "https://cdn.icon-icons.com/icons2/2120/PNG/512/lock_padlock_locked_protected_security_icon_131240.png"; // Cambia la imagen original
+
+            // Llama a la función candado después de que el botón vuelva a su estado original
+
+        }, 5000); // 5000 milisegundos = 5 segundos
+    }
+
+
+    // Verifica si la cookie de sesión es válida
+    function checkSessionCookie() {
+        var cookies = document.cookie.split(';');
+        var sessionCookieValid = false;
+        var username;
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.startsWith('username=')) {
+                // Obtiene el nombre de usuario de la cookie
+                username = cookie.substring('username='.length);
+                sessionCookieValid = true;
+                break;
+            }
+        }
+        // Si la cookie de sesión no es válida, redirecciona de vuelta a la página de inicio de sesión
+        if (!sessionCookieValid || !username || username !== 'admin') {
+            window.location.href = "login.html";
+        }
+    }
+
+    function actualizarIconoWifi(intensidad) {
+        let icono;
+
+        // Determina qué icono usar según la intensidad de la señal
+        if (intensidad >= 80) {
+            icono = "https://cdn.icon-icons.com/icons2/2248/PNG/512/wifi_strength_icon_135016.png"; // Icono de señal fuerte
+
+        } else if (intensidad >= 50) {
+            icono = "https://cdn.icon-icons.com/icons2/933/PNG/512/medium-wifi-signal-with-two-bars_icon-icons.com_72665.png"; // Icono de señal media
+        } else {
+            icono = "https://cdn.icon-icons.com/icons2/933/PNG/512/wifi-low-signal-with-one-bar_icon-icons.com_72467.png"; // Icono de señal débil
+        }
+
+        // Seleccionar el contenedor de WiFi
+        const contenedorWifi = document.getElementById("wifi-icon");
+
+        // Crear un nuevo elemento de imagen
+        const img = document.createElement('img');
+        img.src = icono;
+        img.alt = "Icono de WiFi";
+        img.style.maxWidth = '90%'; // Establecer el tamaño máximo de la imagen
+
+        // Limpiar el contenido del contenedor antes de agregar el nuevo icono
+        contenedorWifi.innerHTML = '';
+        contenedorWifi.appendChild(img);
+    }
+
+    function actualizarPeriodicamente() {
+        setInterval(function() {
+            //const intensidad = obtenerIntensidadDeSenal();
+            const intensidad = 60;
+            actualizarIconoWifi(intensidad);
+        }, 5000); // Actualiza cada 5 segundos (5000 milisegundos)
+    }
+
+    function candado(){
+        setTimeout(function() {
+        var icono = document.getElementById("lock-puerta");
+        icono.src = "https://cdn.icon-icons.com/icons2/2120/PNG/512/lock_padlock_locked_protected_security_icon_131240.png";
+        }, 5000);
+    }
+
+    // Función para cambiar las imágenes cuando se carga la página
+    function cambiarImagenes() {
+        // Seleccionar todos los elementos img dentro del contenedor card-container
+        const imagenes = document.querySelectorAll('.card-container .contenedor img');
+
+        // Iterar sobre cada imagen y cambiar su src
+        imagenes.forEach(function(img) {
+            img.src = "https://cdn.icon-icons.com/icons2/2368/PNG/512/reload_update_refresh_icon_143703.png"; // Cambia la URL de la imagen por la deseada
+        });
+    }
+
+    // Asignar las funciones necesarias a window.onload sin sobrescribir las funciones existentes
+
+    function animateButton() {
+        var button = document.querySelector('.garage');
+        button.style.transform = "translateY(2px)";
+        setTimeout(function(){
+            button.style.transform = "none";
+        }, 100); // Restablece la transformación después de 100 milisegundos (0.1 segundos)
+    }
+
+
+    candado();
+        actualizarPeriodicamente(); // Actualizar el icono de WiFi periódicamente
+        checkSessionCookie(); // Verificar la cookie de sesión al cargar la página
+
+</script>
+</body>
+</html>

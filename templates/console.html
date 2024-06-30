@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Serial ESP32</title>
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+
+        .navbar {
+            background-color: #333;
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .navbar-item {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            margin: 0 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .navbar-item:hover {
+            background-color: #555;
+        }
+
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 10px;
+            width: 80%;
+            background-color: #f9f9f9;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        #console-output {
+            height: 300px;
+            overflow-y: scroll;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        #command-input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        #send-command-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+
+        #send-command-button:hover {
+            background-color: #45a049;
+        }
+
+        @media screen and (max-width: 600px) {
+            .content {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .card {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <a href="dashboard.html" class="navbar-item">Inicio</a>
+    <a href="settings.html" class="navbar-item">Setting</a>
+    <a href="tarjetas.html" class="navbar-item">Tarjetas</a>
+    <a href="console.html" class="navbar-item">Console Serial</a>
+    <a href="#" class="navbar-item logout-button" onclick="logout()">Cerrar sesión</a>
+</div>
+
+<div class="content">
+    <div class="card">
+        <h2>Console Serial ESP32</h2>
+        <div id="console-output"></div>
+        <input type="text" id="command-input" placeholder="Ingrese un comando...">
+        <button id="send-command-button">Enviar Comando</button>
+    </div>
+</div>
+
+<script>
+    // JavaScript para actualizar la salida del console serial
+
+    // Función para actualizar la salida del console serial
+    function updateConsoleOutput() {
+        // Llamada a una API o WebSocket para obtener los datos del console serial
+        // Por ahora, simularemos datos de ejemplo
+        var consoleData = "Ejemplo de datos de Console Serial.\nLínea 1.\nLínea 2.\nLínea 3.";
+
+        // Mostrar los datos en el elemento #console-output
+        document.getElementById("console-output").innerText = consoleData;
+    }
+    function checkSessionCookie() {
+        var cookies = document.cookie.split(';');
+        var sessionCookieValid = false;
+        var username;
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.startsWith('username=')) {
+                // Obtiene el nombre de usuario de la cookie
+                username = cookie.substring('username='.length);
+                sessionCookieValid = true;
+                break;
+            }
+        }
+        // Si la cookie de sesión no es válida, redirecciona de vuelta a la página de inicio de sesión
+        if (!sessionCookieValid || !username || username !== 'admin') {
+            window.location.href = "login.html";
+        }
+    }
+
+    // Llamar a la función para actualizar la salida del console serial
+    updateConsoleOutput();
+    checkSessionCookie();
+    // Llamar a la función cada cierto intervalo de tiempo para mantener actualizada la salida
+    setInterval(updateConsoleOutput, 5000); // 5000 milisegundos (5 segundos)
+    function sendCommand() {
+        // Obtener el comando del input
+        var command = document.getElementById("command-input").value;
+
+        // Aquí puedes agregar código para enviar el comando al ESP32, por ejemplo, a través de una API o WebSocket
+
+        // Borrar el contenido del input después de enviar el comando
+        document.getElementById("command-input").value = "";
+    }
+    function logout() {
+        // Elimina la cookie de sesión
+        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "advancedOption=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // Redirecciona de vuelta a la página de inicio de sesión
+        window.location.href = "login.html";
+    }
+
+    // Agregar un event listener al botón de enviar comando
+    document.getElementById("send-command-button").addEventListener("click", sendCommand);
+</script>
+</body>
+</html>

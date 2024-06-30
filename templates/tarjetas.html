@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-******" crossorigin="anonymous" />
+    <title>Control de Tarjetas NFC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+            border-radius: 10px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .add-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .card-simulator {
+            width: 200px;
+            height: 100px;
+            background-color: #dc3545; /* Rojo por defecto */
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 18px;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+        }
+        .card-simulator.detected {
+            background-color: #28a745; /* Verde cuando detecta algo */
+        }
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .card-actions input {
+            padding: 10px;
+            width: 200px;
+        }
+        .card-actions button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .card-actions button.eliminar {
+            background-color: red;
+        }
+        .navbar {
+            background-color: #333;
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+        }
+        .navbar-item {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            margin: 0 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .navbar-item:hover {
+            background-color: #555;
+        }
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .card-actions.inputs{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <a href="dashboard.html" class="navbar-item">Inicio</a>
+    <a href="settings.html" class="navbar-item">Setting</a>
+    <a href="tarjetas.html" class="navbar-item">Tarjetas</a>
+    <a href="console.html" class="navbar-item">Console Serial</a>
+    <a href="#" class="navbar-item logout-button" onclick="logout()">Cerrar sesión</a>
+</div>
+<div class="container">
+    <h1>Control de Tarjetas NFC</h1>
+
+    <div class="add-card">
+        <div class="card-simulator" id="card-simulator">
+            Tarjeta NFC
+        </div>
+        <div class="card-actions inputs">
+            <input type="text" id="new-card" placeholder="Clave de la nueva tarjeta">
+            <div>
+            <button onclick="writeCard()"><icon class="fas fa-upload"></icon> Escribir</button>
+            <button onclick="readCard()"><icon class="fas fa-download"></icon> Leer</button>
+                <button><icon class="fas fa-sync"></icon> Actualizar</button>
+            <button class="eliminar" onclick="removeSelectedCards()"><icon class="fas fa-trash-alt"></icon> Eliminar</button>
+
+            </div>
+        </div>
+    </div>
+    <div id="card-list" class="card-list">
+        <!-- Aquí se mostrarán las tarjetas NFC -->
+    </div>
+    <p id="card-count">Cantidad de tarjetas registradas: 0</p>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        comprobarTarjeta();
+    });
+
+
+    let cards = [];
+    const url = 'http://localhost:8080/api/tarjetas';
+
+    function updateCardList() {
+        const cardList = document.getElementById('card-list');
+        cardList.innerHTML = "";
+        cards.forEach((card, index) => {
+            const cardElement = document.createElement('div');
+            cardElement.className = 'card';
+            cardElement.innerHTML = `
+                <label class="toggle-switch">
+                    <input type="checkbox" ${card.active ? 'checked' : ''} onchange="toggleCard(${index})">
+                    <span class="slider"></span>
+                </label>
+                <span style="align-items: flex-start">${card.nombre}:${card.id}</span>
+                <div class="card-actions">
+                    <button class="eliminar" onclick="removeCard(${index})"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                    <button onclick=""><i class="fas fa-upload"></i> Escribir</button>
+                </div>
+            `;
+            cardList.appendChild(cardElement);
+        });
+        document.getElementById('card-count').innerText = `Cantidad de tarjetas registradas: ${cards.length}`;
+
+    }
+
+    function addCard(nombre, id) {
+        if (id) {
+            cards.push({ id: id, nombre: nombre, active: true });
+            updateCardList();
+        } else {
+            alert('Ingrese un ID de tarjeta válido');
+        }
+    }
+
+    function isConfirmed() {
+        return confirm('¿Está seguro de eliminar las tarjetas seleccionadas?');
+    }
+
+    function removeCard(index) {
+        if(isConfirmed()) {
+            cards.splice(index, 1);
+            updateCardList();
+        }
+    }
+
+    function removeSelectedCards() {
+        if (isConfirmed()) {
+            cards = cards.filter(card => !card.active);
+            updateCardList();
+        }
+    }
+
+    function toggleCard(index) {
+
+            cards[index].active = !cards[index].active;
+            updateCardList();
+
+    }
+
+    document.getElementById('new-card').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            writeCard();
+        }
+    });
+
+    function writeCard() {
+        const newCardId = document.getElementById('new-card').value;
+        if(comprobarTarjeta()) {
+            if (newCardId) {
+
+                sha256(newCardId)
+                    .then(async hashedText => {
+                        addCard(newCardId, hashedText);
+                        const datos = {
+                            id: newCardId,
+                            hash: hashedText
+                        };
+                        const opciones = {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(datos)
+                        };
+                        // Hacer la solicitud fetch
+                        await fetch(url, opciones)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Ocurrió un error al hacer la solicitud');
+                                }
+                                return response.json(); // Convertir la respuesta a JSON si es aplicable
+                            })
+                            .then(data => {
+                                console.log('Respuesta:', data); // Manejar la respuesta del servidor
+                                // Aquí puedes manipular los datos recibidos según tus necesidades
+                            })
+                            .catch(error => {
+                                console.error('Error:', error); // Capturar errores de red u otros errores
+                            });
+                    })
+                    .catch(error => {
+                        console.error('Error al calcular el hash:', error);
+                        alert('Hubo un error al calcular el hash. Por favor, intente nuevamente.');
+                    })
+                    .finally(() => {
+                        //document.getElementById('card-simulator').classList.remove('detected');
+                        document.getElementById('new-card').value = '';
+                    });
+            } else {
+                alert('Ingrese un ID de tarjeta válido');
+            }
+        }else{
+            alert('Tarjeta no detectada');
+        }
+    }
+
+    function comprobarTarjeta() {
+        var urlActual = window.location.href;
+        var url = new URL(urlActual);
+        var parametro = url.searchParams.get('isTarjeta');
+
+        if (parametro === 'true') {
+            document.getElementById('card-simulator').classList.add('detected');
+        }else{
+            document.getElementById('card-simulator').classList.remove('detected');
+        }
+        return parametro === 'true';
+    }
+
+    function readCard() {
+
+    }
+
+    // Simulación de detección de tarjeta
+    /*document.getElementById('card-simulator').addEventListener('click', () => {
+        const cardSimulator = document.getElementById('card-simulator');
+        if (cardSimulator.classList.contains('detected')) {
+            cardSimulator.classList.remove('detected');
+        } else {
+            cardSimulator.classList.add('detected');
+        }
+    });*/
+    function logout() {
+        // Elimina la cookie de sesión
+        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie = "advancedOption=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // Redirecciona de vuelta a la página de inicio de sesión
+        window.location.href = "login.html";
+    }
+    // Verifica si la cookie de sesión es válida
+    function checkSessionCookie() {
+        var cookies = document.cookie.split(';');
+        var sessionCookieValid = false;
+        var username;
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.startsWith('username=')) {
+                // Obtiene el nombre de usuario de la cookie
+                username = cookie.substring('username='.length);
+                sessionCookieValid = true;
+                break;
+            }
+        }
+        // Si la cookie de sesión no es válida, redirecciona de vuelta a la página de inicio de sesión
+        if (!sessionCookieValid || !username || username !== 'admin') {
+            window.location.href = "login.html";
+        }
+    }
+    checkSessionCookie();
+
+    function sha256(str) {
+        const buffer = new TextEncoder('utf-8').encode(str);
+        return crypto.subtle.digest('SHA-256', buffer)
+            .then(hash => {
+                return Array.prototype.map.call(new Uint8Array(hash), x => ('00' + x.toString(16)).slice(-2)).join('');
+            });
+    }
+</script>
+</body>
+</html>
